@@ -78,7 +78,14 @@ class ClusteringHandler:
         
         return sorted_feature_importance
 
-    
+    @staticmethod
+    def sort_clusters(data: pd.DataFrame, sort_by: str) -> pd.DataFrame:
+        cluster_means = data.groupby('Cluster')[sort_by].mean().sort_values()
+        sorted_cluster_mapping = {old_cluster: new_cluster for new_cluster, old_cluster in enumerate(cluster_means.index)}
+        data['Cluster'] = data['Cluster'].map(sorted_cluster_mapping)
+        return data    
+
+
 class Reporting:
 
     @staticmethod
@@ -104,6 +111,8 @@ def main():
     
     clustering_handler = ClusteringHandler()
     data = clustering_handler.cluster_data(data)
+
+    data = ClusteringHandler.sort_clusters(data, '3m_avg_visitors')
 
     # Displaying cluster averages
     cluster_averages = data.groupby('Cluster').mean()
