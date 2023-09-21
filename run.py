@@ -19,10 +19,26 @@ class DataCleaner:
 
     @staticmethod
     def clean_data(data: pd.DataFrame) -> pd.DataFrame:
-        decimal_point_columns = ['3m_avg_visitors', 'twitter_followers', 'instagram_followers', '24h_volume', 'volume_by_visitors', 'cmc_score', 'android_rate', 'ios_rate', 'sikayetvar_rate']
-        for col in decimal_point_columns:
-            data[col] = data[col].apply(DataCleaner._handle_thousand_and_decimal_separators)
+        decimal_point_columns = [
+            'volume_by_visitors',
+            'cmc_score',
+            'android_rate',
+            'ios_rate',
+            'sikayetvar_rate',
+        ]
+        
+        numerical_columns = [
+            '3m_avg_visitors',
+            'twitter_followers',
+            'instagram_followers',
+            '24h_volume',
+        ] + decimal_point_columns  
+        
+        for col in numerical_columns:
+            data[col] = data[col].apply(lambda x: DataCleaner._handle_thousand_and_decimal_separators(x) if pd.notnull(x) else x)
+            
         return data
+
 
 class DataProcessor:
 
