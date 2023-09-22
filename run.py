@@ -41,13 +41,19 @@ class DataCleaner:
 
 
 class DataProcessor:
-
+  
     @staticmethod
     def compute_weighted_ratings(data: pd.DataFrame) -> pd.DataFrame:
+        # Compute weighted ratings
         data['weighted_android_rate'] = data['android_rate'] * data['android_comments']
         data['weighted_ios_rate'] = data['ios_rate'] * data['ios_comments']
         data['weighted_sikayetvar_rate'] = data['sikayetvar_rate'] * data['sikayetvar_tickets']
+        
+        # Drop non-weighted rate columns
+        data = data.drop(columns=['android_rate', 'ios_rate', 'sikayetvar_rate'])
+        
         return data
+
 
 class ClusteringHandler:
 
