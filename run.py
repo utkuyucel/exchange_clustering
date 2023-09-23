@@ -20,7 +20,6 @@ class DataCleaner:
     @staticmethod
     def clean_data(data: pd.DataFrame) -> pd.DataFrame:
         decimal_point_columns = [
-            'volume_by_visitors',
             'cmc_score',
             'android_rate',
             'ios_rate',
@@ -59,7 +58,7 @@ class DataProcessor:
 
 class ClusteringHandler:
 
-    def __init__(self, n_clusters: int = 4, random_state: int = 34):
+    def __init__(self, n_clusters: int = 5, random_state: int = 34):
         self.n_clusters = n_clusters
         self.random_state = random_state
 
