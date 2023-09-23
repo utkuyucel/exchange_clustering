@@ -91,6 +91,27 @@ class Reporting:
                 print(f"{column}: {mean_value:.2f}" if isinstance(mean_value, float) else f"{column}: {mean_value}")
             print("\n")
 
+    @staticmethod
+    def calculate_improvements(exchange_name: str, data: pd.DataFrame, cluster_averages: pd.DataFrame) -> None:
+        exchange_data = data.loc[data['exchange_name'] == exchange_name]
+        if exchange_data.empty:
+            print("Invalid Exchange Name")
+            return
+        
+        exchange_cluster = exchange_data.iloc[0]['Cluster']
+        if exchange_cluster + 1 not in cluster_averages.index:
+            print(f"{exchange_name} is already in the highest cluster")
+            return
+        
+        current_cluster_mean = cluster_averages.loc[exchange_cluster]
+        higher_cluster_mean = cluster_averages.loc[exchange_cluster + 1]
+
+        improvements = higher_cluster_mean - exchange_data.iloc[0]
+        print(f"To move {exchange_name} to cluster {exchange_cluster + 1}, the following improvements are needed:")
+        for feature, value in improvements.items():
+            if feature != 'Cluster' and value > 0:
+                print(f"{feature}: {value:.2f}")
+
 
 def main():
     data = pd.read_csv('exchanges_data.csv')
@@ -115,6 +136,12 @@ def main():
     print("\nFeature Importances:")
     for feature, importance in feature_importances:
         print(f"{feature}: %{(importance * 100):.2f}")
+
+    print("\n################################################################\n")
+
+    exchange_name = "Bitlo"
+    Reporting.calculate_improvements(exchange_name, data, cluster_averages)
+
 
 
 if __name__ == "__main__":
