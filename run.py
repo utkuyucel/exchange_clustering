@@ -26,45 +26,47 @@ class DataCleaner:
             'ios_rate',
             'sikayetvar_rate',
         ]
-        
+
         numerical_columns = [
             '3m_avg_visitors',
             'twitter_followers',
             'instagram_followers',
             '24h_volume',
-        ] + decimal_point_columns  
-        
+            'eksisozluk_comments',
+            'instagram_post_count',
+        ] + decimal_point_columns
+
         for col in numerical_columns:
             data[col] = data[col].apply(lambda x: DataCleaner._handle_thousand_and_decimal_separators(x) if pd.notnull(x) else x)
-            
+
         return data
 
 
 class DataProcessor:
-  
+
     @staticmethod
     def compute_weighted_ratings(data: pd.DataFrame) -> pd.DataFrame:
         # Compute weighted ratings
         data['weighted_android_rate'] = data['android_rate'] * data['android_comments']
         data['weighted_ios_rate'] = data['ios_rate'] * data['ios_comments']
         data['weighted_sikayetvar_rate'] = data['sikayetvar_rate'] * data['sikayetvar_tickets']
-        
+
         # Drop non-weighted rate columns
         data = data.drop(columns=['android_rate', 'ios_rate', 'sikayetvar_rate'])
-        
+
         return data
 
 
 class ClusteringHandler:
 
-    def __init__(self, n_clusters: int = 5, random_state: int = 34):
+    def __init__(self, n_clusters: int = 4, random_state: int = 34):
         self.n_clusters = n_clusters
         self.random_state = random_state
 
     def cluster_data(self, data: pd.DataFrame) -> pd.DataFrame:
         # KNN imputation
         features = data.drop(columns=['exchange_name']).dropna()
-        knn_imputer = KNNImputer(n_neighbors=5)
+        knn_imputer = KNNImputer(n_neighbors=3)
         imputed_data = knn_imputer.fit_transform(features)
 
         # Normalizing the data
@@ -78,12 +80,12 @@ class ClusteringHandler:
         # Assign the cluster labels
         data.loc[features.index, 'Cluster'] = clusters
         return data
-    
+
     @staticmethod
     def compute_feature_importances(data, clusters):
         """
         Computes feature importances using Random Forest.
-        
+
         :param data: DataFrame, feature matrix
         :param clusters: array-like, cluster labels
         :return: sorted feature importances in descending order
@@ -94,10 +96,10 @@ class ClusteringHandler:
         # Pairing feature names with their importance scores
         features = list(data.columns)
         feature_importance_dict = dict(zip(features, feature_importances))
-        
+
         # Sorting the features based on importance
         sorted_feature_importance = sorted(feature_importance_dict.items(), key=lambda item: item[1], reverse=True)
-        
+
         return sorted_feature_importance
 
     @staticmethod
@@ -105,7 +107,7 @@ class ClusteringHandler:
         cluster_means = data.groupby('Cluster')[sort_by].mean().sort_values()
         sorted_cluster_mapping = {old_cluster: new_cluster for new_cluster, old_cluster in enumerate(cluster_means.index)}
         data['Cluster'] = data['Cluster'].map(sorted_cluster_mapping)
-        return data    
+        return data
 
 
 class Reporting:
@@ -122,7 +124,7 @@ class Reporting:
                 else:
                     print(f"{column}: {mean_value}")
             print("\n")
-    
+
 
 
 
@@ -130,7 +132,7 @@ def main():
     data = pd.read_csv('exchanges_data.csv')
     data = DataCleaner.clean_data(data)
     data = DataProcessor.compute_weighted_ratings(data)
-    
+
     clustering_handler = ClusteringHandler()
     data = clustering_handler.cluster_data(data)
 
@@ -153,7 +155,7 @@ def main():
     feature_importances = ClusteringHandler.compute_feature_importances(features, clusters)
     print("\nFeature Importances:")
     for feature, importance in feature_importances:
-        print(f"{feature}: {importance:.4f}")
+        print(f"{feature}: %{(importance * 100):.2f}")
 
 
 if __name__ == "__main__":
