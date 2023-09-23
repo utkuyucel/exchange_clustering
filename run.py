@@ -112,6 +112,18 @@ class Reporting:
             if feature != 'Cluster' and value > 0:
                 print(f"{feature}: {value:.2f}")
 
+    @staticmethod
+    def plot_feature_importances(feature_importances: list[dict]):
+        """Plot the feature importances using Plotly."""
+        feature_importance_df = pd.DataFrame(feature_importances, columns=['Feature', 'Importance'])
+        fig = px.bar(feature_importance_df, x='Feature', y='Importance',
+                     title='Feature Importances',
+                     labels={'Importance': 'Importance (%)'},
+                     text='Importance')
+        fig.update_traces(texttemplate='%{text:.2%}', textposition='outside')
+        fig.update_layout(yaxis=dict(tickformat='%'))
+        fig.show()
+
 
 def main():
     data = pd.read_csv('exchanges_data.csv')
@@ -131,17 +143,16 @@ def main():
 
     features = data.drop(columns=['exchange_name', 'Cluster']).dropna()
     clusters = data.loc[features.index, 'Cluster']
-    feature_importances = ClusteringHandler.compute_feature_importances(features, clusters)
-
-    print("\nFeature Importances:")
-    for feature, importance in feature_importances:
-        print(f"{feature}: %{(importance * 100):.2f}")
+    feature_importances_list = ClusteringHandler.compute_feature_importances(features, clusters)
+    
+    # Create DataFrame from feature_importances and plot using Plotly
+    feature_importances_df = pd.DataFrame(feature_importances_list, columns=['Feature', 'Importance'])
+    Reporting.plot_feature_importances(feature_importances_df)
 
     print("\n################################################################\n")
 
     exchange_name = "Bitlo"
     Reporting.calculate_improvements(exchange_name, data, cluster_averages)
-
 
 
 if __name__ == "__main__":
