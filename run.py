@@ -121,8 +121,12 @@ class Reporting:
                      labels={'Importance': 'Importance (%)'},
                      text='Importance')
         fig.update_traces(texttemplate='%{text:.2%}', textposition='outside')
-        fig.update_layout(yaxis=dict(tickformat='%'))
+        fig.update_layout(
+            yaxis=dict(tickformat='%'),
+            xaxis=dict(tickangle=-45)  # Rotate x-axis labels by 45 degrees
+        )
         fig.show()
+
 
 
 def main():
