@@ -25,7 +25,7 @@ class DataCleaner:
         ]
         numerical_columns = [
             '3m_avg_visitors', 'twitter_followers', 'instagram_followers',
-            'eksisozluk_comments', 'instagram_post_count'
+            'eksisozluk_comments', 'instagram_post_count', 'tweet_count',
         ] + decimal_point_columns
 
         data[numerical_columns] = data[numerical_columns].applymap(DataCleaner._handle_thousand_and_decimal_separators)
