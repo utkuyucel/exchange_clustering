@@ -42,7 +42,7 @@ class DataProcessor:
         data['weighted_android_rate'] = data['android_rate'] * data['android_comments']
         data['weighted_ios_rate'] = data['ios_rate'] * data['ios_comments']
         data['weighted_sikayetvar_rate'] = data['sikayetvar_rate'] * data['sikayetvar_tickets']
-        data.drop(columns=['android_rate', 'ios_rate', 'sikayetvar_rate'], inplace=True)
+        data.drop(columns=['android_rate', 'android_comments','ios_rate', 'ios_comments', 'sikayetvar_rate', 'sikayetvar_tickets'], inplace=True)
         return data
 
 
