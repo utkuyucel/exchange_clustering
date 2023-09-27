@@ -1,6 +1,7 @@
 from __future__ import annotations
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 import plotly.express as px
 from sklearn.cluster import KMeans
 from sklearn.ensemble import RandomForestClassifier
@@ -129,6 +130,27 @@ class Reporting:
         )
         fig.show()
 
+                
+    @staticmethod
+    def plot_clusters_with_exchanges(data: pd.DataFrame):
+        """Plot clusters with exchanges using a treemap."""
+      
+        data_copy = data.copy()
+        data_copy['dummy'] = 'Exchanges'
+        
+        cluster_sizes = data_copy.groupby('Cluster')['3m_avg_visitors'].mean().to_dict()
+        
+        adjusted_cluster_sizes = {cluster: 1 + np.log(size) for cluster, size in cluster_sizes.items()}
+        
+        data_copy['size'] = data_copy['Cluster'].map(adjusted_cluster_sizes)
+        
+        unique_clusters = sorted([cluster for cluster in data_copy['Cluster'].dropna().unique() if not pd.isna(cluster)], key=lambda x: -x)
+        data_copy['Cluster'] = pd.Categorical(data_copy['Cluster'], categories=unique_clusters, ordered=True)
+        
+        data_filtered = data_copy.dropna(subset=['Cluster', 'exchange_name'])
+        
+        fig = px.treemap(data_filtered, path=['Cluster', 'dummy', 'exchange_name'], values='size', title='Exchanges in Clusters')
+        fig.show()
 
 
 def main():
@@ -142,10 +164,11 @@ def main():
 
     cluster_averages = data.groupby('Cluster').mean()
     Reporting.display_cluster_averages(cluster_averages)
+    Reporting.plot_clusters_with_exchanges(data)
 
-    for cluster_num in cluster_averages.index:
-        exchanges_in_cluster = data[data['Cluster'] == cluster_num]['exchange_name'].tolist()
-        print(f"Cluster {cluster_num}:\n", ', '.join(exchanges_in_cluster), "\n")
+    # for cluster_num in cluster_averages.index:
+    #     exchanges_in_cluster = data[data['Cluster'] == cluster_num]['exchange_name'].tolist()
+    #     print(f"Cluster {cluster_num}:\n", ', '.join(exchanges_in_cluster), "\n")
 
     features = data.drop(columns=['exchange_name', 'Cluster']).dropna()
     clusters = data.loc[features.index, 'Cluster']
